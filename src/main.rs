@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use components::playable::Playable;
-use constants::{MAP_SIZE, TILE_SIZE};
-use map::fill_tilemap_and_walls;
-use systems::move_playable::move_playable;
+use components::player::{Player, PlayerBundle};
+use constants::{TileType, MAP_SIZE, TILE_SIZE};
+use generate_tilemap::{entities_from_tilemap, generate_tilemap};
+use leafwing_input_manager::{Actionlike, InputManagerBundle};
+use systems::move_playable::move_player;
 
 mod camera;
 mod components;
 mod constants;
-mod map;
+mod generate_tilemap;
 mod systems;
+mod tilemap;
 
 // TODO: Move this to a resource or something... I think
 #[derive(Component)]
@@ -33,7 +35,7 @@ fn main() {
         .add_plugin(TilemapPlugin)
         .add_startup_system(setup)
         .add_system(camera::movement)
-        .add_system(move_playable)
+        .add_system(move_player)
         .run();
 }
 
@@ -48,13 +50,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Background layer
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
     let tilemap_entity = commands.spawn_empty().id();
-    let player_pos = TilePos { x: 16, y: 16 };
+    let (tilemap, starting_position) = generate_tilemap(MAP_SIZE);
 
-    fill_tilemap_and_walls(
-        TileTextureIndex(1),
-        TileTextureIndex(637),
-        player_pos,
-        MAP_SIZE,
+    entities_from_tilemap(
+        tilemap,
         TilemapId(tilemap_entity),
         &mut commands,
         &mut tile_storage,
@@ -77,16 +76,27 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Foreground layer
     let tilemap_entity = commands.spawn_empty().id();
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
+
+    let player_pos = TilePos {
+        x: starting_position.0 as u32,
+        y: starting_position.1 as u32,
+    };
+
     let tile_entity = commands
         .spawn((
             TileBundle {
                 position: player_pos,
                 tilemap_id: TilemapId(tilemap_entity),
-                // 8 * 49 + 18 = 418
-                texture_index: TileTextureIndex(416),
+                texture_index: TileType::Human.index(),
                 ..Default::default()
             },
-            Playable {},
+            PlayerBundle {
+                playable: Player::One,
+                input_manager: InputManagerBundle {
+                    input_map: PlayerBundle::input_map(Player::One),
+                    ..Default::default()
+                },
+            },
         ))
         .id();
 
