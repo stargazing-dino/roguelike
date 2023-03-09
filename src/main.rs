@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use components::player::{Player, PlayerBundle};
+use components::player::{Player, PlayerAction, PlayerBundle};
 use constants::{TileType, MAP_SIZE, TILE_SIZE};
 use generate_tilemap::{entities_from_tilemap, generate_tilemap};
-use leafwing_input_manager::{Actionlike, InputManagerBundle};
+use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
 use systems::move_playable::move_player;
 
 mod camera;
@@ -32,6 +32,7 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
+        .add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(TilemapPlugin)
         .add_startup_system(setup)
         .add_system(camera::movement)
@@ -82,7 +83,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         y: starting_position.1 as u32,
     };
 
-    let tile_entity = commands
+    let player_entity = commands
         .spawn((
             TileBundle {
                 position: player_pos,
@@ -91,7 +92,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             PlayerBundle {
-                playable: Player::One,
+                player: Player::One,
                 input_manager: InputManagerBundle {
                     input_map: PlayerBundle::input_map(Player::One),
                     ..Default::default()
@@ -100,7 +101,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .id();
 
-    tile_storage.set(&player_pos, tile_entity);
+    tile_storage.set(&player_pos, player_entity);
 
     commands.entity(tilemap_entity).insert(TilemapBundle {
         grid_size,

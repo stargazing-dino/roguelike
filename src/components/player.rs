@@ -1,7 +1,4 @@
-use bevy::{
-    ecs::bundle,
-    prelude::{Bundle, Component, Gamepad, GamepadButtonType, KeyCode},
-};
+use bevy::prelude::{Bundle, Component, Gamepad, GamepadButtonType, KeyCode};
 use leafwing_input_manager::{prelude::InputMap, Actionlike, InputManagerBundle};
 
 /// This component is used to mark an entity as playable.
@@ -21,7 +18,7 @@ pub enum PlayerAction {
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
-    pub playable: Player,
+    pub player: Player,
 
     #[bundle]
     pub input_manager: InputManagerBundle<PlayerAction>,
