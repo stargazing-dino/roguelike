@@ -17,6 +17,9 @@ mod tilemap;
 #[derive(Component)]
 pub struct Map {}
 
+#[derive(Component)]
+pub struct LastMovedTime(f64);
+
 fn main() {
     App::new()
         .add_plugins(
@@ -82,6 +85,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         x: starting_position.0 as u32,
         y: starting_position.1 as u32,
     };
+    debug!("Starting position: {:?}", player_pos);
 
     let player_entity = commands
         .spawn((
@@ -98,6 +102,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..Default::default()
                 },
             },
+            LastMovedTime(0.0),
         ))
         .id();
 
@@ -110,7 +115,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         storage: tile_storage,
         texture: TilemapTexture::Single(texture_handle),
         tile_size: TILE_SIZE,
-        transform: get_tilemap_center_transform(&MAP_SIZE, &grid_size, &map_type, 0.0),
+        transform: get_tilemap_center_transform(&MAP_SIZE, &grid_size, &map_type, 100.0),
         ..Default::default()
     });
 }

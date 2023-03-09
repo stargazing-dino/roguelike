@@ -14,7 +14,7 @@ pub fn generate_tilemap(size: TilemapSize) -> (Tilemap, (usize, usize)) {
 
     let mut rooms: Vec<URect> = Vec::new();
 
-    const MAX_ROOMS: i32 = 6;
+    const MAX_ROOMS: i32 = 2;
     const MIN_SIZE: i32 = 4;
     const MAX_SIZE: i32 = 10;
 
@@ -47,8 +47,8 @@ pub fn generate_tilemap(size: TilemapSize) -> (Tilemap, (usize, usize)) {
                 };
 
                 tilemap.apply_line_to_map(
-                    (start_x, new_y),
-                    (end_x, new_y),
+                    (new_x, new_y),
+                    (prev_x, prev_y),
                     TileType::GroundPathLarge,
                 );
             }
@@ -59,7 +59,8 @@ pub fn generate_tilemap(size: TilemapSize) -> (Tilemap, (usize, usize)) {
 
     tilemap.apply_border_to_map(TileType::GroundPathLarge);
 
-    (tilemap, rooms[0].center())
+    // (tilemap, rooms[0].center())
+    (tilemap, (10, 10))
 }
 
 /// Adds entities to the world from a tilemap
@@ -87,7 +88,14 @@ pub fn entities_from_tilemap(
 
             // TODO: Implement groups
             match tile {
-                TileType::Ground => {
+                TileType::Ground
+                | TileType::GroundWithDirt
+                | TileType::GroundPathPartial
+                | TileType::GroundPathSmall
+                | TileType::GroundPathLarge
+                | TileType::GroundWithGrass
+                | TileType::GroundWithWeeds
+                | TileType::GroundWithLatticedGrass => {
                     entity_commands.insert(Walkable {});
                 }
                 _ => {}
