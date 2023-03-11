@@ -8,7 +8,11 @@ use constants::{TileType, MAP_SIZE, TILE_SIZE};
 use entities_from_tilemap::entities_from_tilemap;
 use generate_tilemap::generate_tilemap;
 use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
-use systems::{explore_tiles::explore_tiles, move_playable::move_player, visibility::visibility};
+use systems::{
+    explore_tiles::explore_tiles,
+    move_playable::move_player,
+    viewshed::{update_tiles_for_viewshed, update_viewshed},
+};
 
 use components::viewshed::Viewshed;
 
@@ -17,6 +21,7 @@ mod components;
 mod constants;
 mod entities_from_tilemap;
 mod generate_tilemap;
+mod line_of_sight;
 mod systems;
 mod tilemap;
 
@@ -46,9 +51,10 @@ fn main() {
         .add_plugin(TilemapPlugin)
         .add_startup_system(setup)
         .add_system(camera::movement)
-        .add_system(visibility)
         .add_system(explore_tiles)
         .add_system(move_player)
+        .add_system(update_viewshed.after(move_player))
+        .add_system(update_tiles_for_viewshed.after(update_viewshed))
         .run();
 }
 

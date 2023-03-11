@@ -1,14 +1,15 @@
 use bevy::prelude::*;
-use bevy_ecs_tilemap::tiles::{TilePos, TileStorage};
+use bevy_ecs_tilemap::tiles::{TilePos, TileStorage, TileVisible};
 
 use crate::{
-    components::{obstacle::Obstacle, viewshed::Viewshed},
+    components::{obstacle::Obstacle, player::Player, viewshed::Viewshed},
+    line_of_sight::Visibility,
     Map,
 };
 
 use super::move_playable::TileDistance;
 
-pub fn visibility(
+pub fn update_viewshed(
     mut query: Query<(&mut Viewshed, &TilePos), Changed<TilePos>>,
     map_storage_query: Query<&TileStorage, With<Map>>,
     obstacle_query: Query<With<Obstacle>>,
@@ -35,13 +36,42 @@ pub fn visibility(
 
                 // If the distance is less than the viewable range, then we can see it
                 if distance < viewable_range {
-                    // TODO: should we use is_err() or !is_ok()?
                     // If the tile is not an obstacle, then we can see it
-                    if obstacle_query.get(map.get(&tile_pos).unwrap()).is_err() {
+                    let is_visible = map.is_visible(current_tile_pos, &tile_pos, |entity, _| {
+                        obstacle_query.get(*entity).is_err()
+                    });
+
+                    if is_visible {
                         viewshed.visible_tiles.push(tile_pos);
                     }
                 }
             }
+        }
+    }
+}
+
+// TODO: Is there a way to only run this when the viewshed changes rather than every frame?
+pub fn update_tiles_for_viewshed(
+    mut query: Query<&Viewshed, With<Player>>,
+    map_storage_query: Query<&TileStorage, With<Map>>,
+    mut tile_query: Query<(&mut TileVisible, &TilePos)>,
+) {
+    let map = map_storage_query.single();
+    let mut visible_tiles: Vec<TilePos> = Vec::new();
+
+    // collect all the visible tiles inside the viewshed query
+    for viewshed in query.iter_mut() {
+        visible_tiles.extend(viewshed.visible_tiles.iter());
+    }
+
+    for tile_pos in map.iter() {
+        let tile_entity = tile_pos.unwrap();
+        let (mut visibility, tile_pos) = tile_query.get_mut(tile_entity).unwrap();
+
+        if visible_tiles.contains(tile_pos) {
+            visibility.0 = true;
+        } else {
+            visibility.0 = false;
         }
     }
 }
