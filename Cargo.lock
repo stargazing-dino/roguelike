@@ -2569,6 +2569,7 @@ dependencies = [
  "bevy",
  "bevy_ecs_tilemap",
  "leafwing-input-manager",
+ "num-integer",
  "rand",
 ]
 

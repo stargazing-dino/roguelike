@@ -1,10 +1,10 @@
 use bevy::{
-    prelude::{Component, Input, KeyCode, Query, Res, Resource, With},
-    time::{Time, Timer},
-    utils::Instant,
+    prelude::{Query, Res, With},
+    time::Time,
 };
 use bevy_ecs_tilemap::tiles::{TilePos, TileStorage};
 use leafwing_input_manager::prelude::ActionState;
+use num_integer::Roots;
 
 use crate::{
     components::{
@@ -14,6 +14,19 @@ use crate::{
     constants::MAP_SIZE,
     LastMovedTime, Map,
 };
+
+pub trait TileDistance {
+    fn distance(&self, other: &Self) -> u32;
+}
+
+impl TileDistance for TilePos {
+    fn distance(&self, other: &Self) -> u32 {
+        let x = (self.x as i32 - other.x as i32).abs();
+        let y = (self.y as i32 - other.y as i32).abs();
+
+        (x.pow(2) + y.pow(2)).sqrt() as u32
+    }
+}
 
 // TODO: Component
 const MOVE_COOLDOWN: f64 = 0.1;

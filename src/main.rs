@@ -1,14 +1,21 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use components::player::{Player, PlayerAction, PlayerBundle};
+use components::{
+    explored_tiles::ExploredTiles,
+    player::{Player, PlayerAction, PlayerBundle},
+};
 use constants::{TileType, MAP_SIZE, TILE_SIZE};
-use generate_tilemap::{entities_from_tilemap, generate_tilemap};
+use entities_from_tilemap::entities_from_tilemap;
+use generate_tilemap::generate_tilemap;
 use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
-use systems::move_playable::move_player;
+use systems::{explore_tiles::explore_tiles, move_playable::move_player, visibility::visibility};
+
+use components::viewshed::Viewshed;
 
 mod camera;
 mod components;
 mod constants;
+mod entities_from_tilemap;
 mod generate_tilemap;
 mod systems;
 mod tilemap;
@@ -39,6 +46,8 @@ fn main() {
         .add_plugin(TilemapPlugin)
         .add_startup_system(setup)
         .add_system(camera::movement)
+        .add_system(visibility)
+        .add_system(explore_tiles)
         .add_system(move_player)
         .run();
 }
@@ -46,7 +55,6 @@ fn main() {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
 
-    // 49 x 22
     let texture_handle: Handle<Image> = asset_server.load("colored_packed.png");
     let grid_size = TILE_SIZE.into();
     let map_type = TilemapType::default();
@@ -80,12 +88,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Foreground layer
     let tilemap_entity = commands.spawn_empty().id();
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
-
     let player_pos = TilePos {
         x: starting_position.0 as u32,
         y: starting_position.1 as u32,
     };
-    debug!("Starting position: {:?}", player_pos);
 
     let player_entity = commands
         .spawn((
@@ -103,6 +109,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
             },
             LastMovedTime(0.0),
+            Viewshed {
+                visible_tiles: Vec::new(),
+                range: 8,
+            },
+            ExploredTiles::default(),
         ))
         .id();
 

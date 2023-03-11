@@ -1,11 +1,11 @@
 use bevy::prelude::{Bundle, Component, Gamepad, GamepadButtonType, KeyCode};
 use leafwing_input_manager::{prelude::InputMap, Actionlike, InputManagerBundle};
 
+// TODO: I don't think this will be accurate with matchbox code
 /// This component is used to mark an entity as playable.
 #[derive(Component, Debug)]
 pub enum Player {
     One,
-    Two,
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]
@@ -39,14 +39,6 @@ impl PlayerBundle {
             // Note that this step is not required:
             // if it is skipped all input maps will read from all connected gamepads
             .set_gamepad(Gamepad { id: 0 })
-            .build(),
-            Player::Two => InputMap::new([
-                (KeyCode::A, PlayerAction::Left),
-                (KeyCode::D, PlayerAction::Right),
-                (KeyCode::W, PlayerAction::Up),
-                (KeyCode::S, PlayerAction::Down),
-            ])
-            .set_gamepad(Gamepad { id: 1 })
             .build(),
         };
 

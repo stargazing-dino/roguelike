@@ -1,4 +1,4 @@
-use rand::Rng;
+use num_integer::Roots;
 
 use crate::constants::TileType;
 
@@ -7,6 +7,13 @@ pub struct Tilemap {
     tiles: Vec<Vec<TileType>>,
 }
 
+pub enum LineDirection {
+    Vertical,
+    Horizontal,
+    Heuristic,
+}
+
+// TODO: I think I'd like if this code used u32 instead of usize.
 impl Tilemap {
     pub fn new(width: usize, height: usize) -> Tilemap {
         Tilemap {
@@ -50,6 +57,21 @@ impl Tilemap {
         }
     }
 
+    // TODO: This is filled. We need an outline version.
+    pub fn apply_circle_to_map(&mut self, center: &(usize, usize), radius: usize, tile: TileType) {
+        for x in 0..self.tiles[0].len() {
+            for y in 0..self.tiles.len() {
+                let distance = ((x as i32 - center.0 as i32).pow(2)
+                    + (y as i32 - center.1 as i32).pow(2))
+                .sqrt() as usize;
+
+                if distance <= radius {
+                    self.set_tile(x, y, tile);
+                }
+            }
+        }
+    }
+
     pub fn apply_border_to_map(&mut self, tile: TileType) {
         for x in 0..self.tiles[0].len() {
             self.set_tile(x, 0, tile);
@@ -62,7 +84,10 @@ impl Tilemap {
         }
     }
 
-    /// Applies a line of a given tile type to the map between the specified start and end points
+    /// Applies a line of a given tile type to the map between the specified start
+    /// and end points.
+    ///
+    /// This is a modified version of Bresenham's line algorithm.
     pub fn apply_line_to_map(
         &mut self,
         start: (usize, usize),
@@ -119,6 +144,33 @@ impl Tilemap {
                 error += delta_row;
                 current_col = (current_col as i32 + step_col) as usize;
             }
+        }
+    }
+
+    // Draws a line between the specified start and end points, using the specified
+    // tile type. The line will start at `start` and then move either vertically or
+    // horizontally until it on the same row or column as `end`. Then it will move
+    // either horizontally or vertically until it reaches `end`.
+    pub fn draw_line_with_bend(
+        &mut self,
+        start: (usize, usize),
+        end: (usize, usize),
+        tile: TileType,
+        line_direction: LineDirection,
+    ) {
+        let (start_row, start_col) = start;
+        let (end_row, end_col) = end;
+
+        match line_direction {
+            LineDirection::Horizontal => {
+                self.apply_line_to_map(start, (start_row, end_col), tile);
+                self.apply_line_to_map((start_row, end_col), end, tile);
+            }
+            LineDirection::Vertical => {
+                self.apply_line_to_map(start, (end_row, start_col), tile);
+                self.apply_line_to_map((end_row, start_col), end, tile);
+            }
+            _ => todo!(),
         }
     }
 }

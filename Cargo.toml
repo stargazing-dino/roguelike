@@ -9,6 +9,7 @@ edition = "2021"
 bevy = "0.9.1"
 bevy_ecs_tilemap = { version = "0.9.0", features = ["atlas"] }
 leafwing-input-manager = "0.8.0"
+num-integer = "0.1.45"
 rand = "0.8.5"
 # bevy = { git = "https://github.com/bevyengine/bevy.git" }
 # bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap.git" }
