@@ -1,6 +1,10 @@
-use bevy::prelude::{Input, KeyCode, Query, Res, With};
+use bevy::{
+    prelude::{Query, Res, With},
+    time::Time,
+};
 use bevy_ecs_tilemap::tiles::{TilePos, TileStorage};
 use leafwing_input_manager::prelude::ActionState;
+use num_integer::Roots;
 
 use crate::{
     components::{
@@ -8,20 +12,37 @@ use crate::{
         walkable::Walkable,
     },
     constants::MAP_SIZE,
-    Map,
+    LastMovedTime, Map,
 };
 
+pub trait TileDistance {
+    fn distance(&self, other: &Self) -> u32;
+}
+
+impl TileDistance for TilePos {
+    fn distance(&self, other: &Self) -> u32 {
+        let x = (self.x as i32 - other.x as i32).abs();
+        let y = (self.y as i32 - other.y as i32).abs();
+
+        (x.pow(2) + y.pow(2)).sqrt() as u32
+    }
+}
+
+// TODO: Component
+const MOVE_COOLDOWN: f64 = 0.1;
+
 pub fn move_player(
-    // keys: Res<Input<KeyCode>>,
     action_query: Query<&ActionState<PlayerAction>, With<Player>>,
-    mut query: Query<&mut TilePos, With<Player>>,
+    mut query: Query<(&mut TilePos, &mut LastMovedTime), With<Player>>,
     map_storage_query: Query<&TileStorage, With<Map>>,
     walkable_query: Query<With<Walkable>>,
+    time: Res<Time>,
 ) {
     let action_state = action_query.single();
     let map = map_storage_query.single();
 
-    for mut tile_pos in query.iter_mut() {
+    for (mut tile_pos, mut last_moved_time) in query.iter_mut() {
+        let current_time = time.elapsed_seconds_f64();
         let mut temp = *tile_pos;
 
         if action_state.pressed(PlayerAction::Left) && tile_pos.x > 0 {
@@ -38,8 +59,13 @@ pub fn move_player(
         }
 
         let next = map.get(&temp).unwrap();
+        let passed_threshold = current_time - last_moved_time.0 > MOVE_COOLDOWN;
 
-        if walkable_query.get(next).is_ok() {
+        if walkable_query.get(next).is_ok() && passed_threshold {
+            // The move cooldown has expired, so move the player
+            // Update the last moved time to the current time
+            last_moved_time.0 = current_time;
+
             tile_pos.x = temp.x;
             tile_pos.y = temp.y;
         }
