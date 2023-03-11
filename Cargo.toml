@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = "0.9.1"
 bevy_ecs_tilemap = { version = "0.9.0", features = ["atlas"] }
+big-brain = "0.17.0"
 leafwing-input-manager = "0.8.0"
 num-integer = "0.1.45"
 rand = "0.8.5"

@@ -3,7 +3,7 @@ use rand::Rng;
 
 use crate::{
     constants::TileType,
-    tilemap::{LineDirection, Tilemap, URect},
+    tilemap::{urect::URect, LineDirection, Tilemap},
 };
 
 pub fn generate_tilemap(size: TilemapSize) -> (Tilemap, (usize, usize)) {
