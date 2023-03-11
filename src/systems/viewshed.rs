@@ -1,8 +1,8 @@
 use bevy::prelude::*;
-use bevy_ecs_tilemap::tiles::{TilePos, TileStorage, TileVisible};
+use bevy_ecs_tilemap::tiles::{TilePos, TileStorage};
 
 use crate::{
-    components::{obstacle::Obstacle, player::Player, viewshed::Viewshed},
+    components::{obstacle::Obstacle, viewshed::Viewshed},
     line_of_sight::Visibility,
     Map,
 };
@@ -46,32 +46,6 @@ pub fn update_viewshed(
                     }
                 }
             }
-        }
-    }
-}
-
-// TODO: Is there a way to only run this when the viewshed changes rather than every frame?
-pub fn update_tiles_for_viewshed(
-    mut query: Query<&Viewshed, With<Player>>,
-    map_storage_query: Query<&TileStorage, With<Map>>,
-    mut tile_query: Query<(&mut TileVisible, &TilePos)>,
-) {
-    let map = map_storage_query.single();
-    let mut visible_tiles: Vec<TilePos> = Vec::new();
-
-    // collect all the visible tiles inside the viewshed query
-    for viewshed in query.iter_mut() {
-        visible_tiles.extend(viewshed.visible_tiles.iter());
-    }
-
-    for tile_pos in map.iter() {
-        let tile_entity = tile_pos.unwrap();
-        let (mut visibility, tile_pos) = tile_query.get_mut(tile_entity).unwrap();
-
-        if visible_tiles.contains(tile_pos) {
-            visibility.0 = true;
-        } else {
-            visibility.0 = false;
         }
     }
 }
