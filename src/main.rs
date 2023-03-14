@@ -5,8 +5,6 @@ use components::{
     player::{Player, PlayerAction, PlayerBundle},
 };
 use constants::{TileType, MAP_SIZE, TILE_SIZE};
-use entities_from_tilemap::entities_from_tilemap;
-use generate_tilemap::generate_tilemap;
 use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
 use systems::{
     explore_tiles::explore_tiles, move_playable::move_player,
@@ -14,12 +12,11 @@ use systems::{
 };
 
 use components::viewshed::Viewshed;
+use tilemap::{entities_from_tilemap::entities_from_tilemap, generate_tilemap::generate_tilemap};
 
 mod camera;
 mod components;
 mod constants;
-mod entities_from_tilemap;
-mod generate_tilemap;
 mod line_of_sight;
 mod systems;
 mod tilemap;

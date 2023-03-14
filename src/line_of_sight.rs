@@ -1,7 +1,7 @@
 use bevy::prelude::Entity;
 use bevy_ecs_tilemap::tiles::{TilePos, TileStorage};
 
-pub trait Visibility {
+pub trait LineOfSight {
     fn is_visible<F>(&self, from: &TilePos, to: &TilePos, test_func: F) -> bool
     where
         F: Fn(&Entity, TilePos) -> bool;
@@ -9,7 +9,7 @@ pub trait Visibility {
 
 // TODO: This uses the same bresenham algorithm as the movement system. We should probably
 // refactor this into a common module.
-impl Visibility for TileStorage {
+impl LineOfSight for TileStorage {
     fn is_visible<F>(&self, from: &TilePos, to: &TilePos, test_func: F) -> bool
     where
         F: Fn(&Entity, TilePos) -> bool,

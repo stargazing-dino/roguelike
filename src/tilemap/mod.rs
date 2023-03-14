@@ -4,9 +4,10 @@ use crate::constants::TileType;
 
 use self::urect::URect;
 
+pub mod entities_from_tilemap;
+pub mod generate_tilemap;
 pub mod urect;
 
-// TODO: This might be a good candidate for a command buffer.
 pub struct Tilemap {
     tiles: Vec<Vec<TileType>>,
 }
@@ -63,8 +64,8 @@ impl Tilemap {
 
     // TODO: This is filled. We need an outline version.
     pub fn apply_circle_to_map(&mut self, center: &(usize, usize), radius: usize, tile: TileType) {
-        for x in 0..self.tiles[0].len() {
-            for y in 0..self.tiles.len() {
+        for x in 0..self.width() {
+            for y in 0..self.height() {
                 let distance = ((x as i32 - center.0 as i32).pow(2)
                     + (y as i32 - center.1 as i32).pow(2))
                 .sqrt() as usize;
@@ -77,14 +78,14 @@ impl Tilemap {
     }
 
     pub fn apply_border_to_map(&mut self, tile: TileType) {
-        for x in 0..self.tiles[0].len() {
+        for x in 0..self.width() {
             self.set_tile(x, 0, tile);
-            self.set_tile(x, self.tiles.len() - 1, tile);
+            self.set_tile(x, self.height() - 1, tile);
         }
 
-        for y in 0..self.tiles.len() {
+        for y in 0..self.height() {
             self.set_tile(0, y, tile);
-            self.set_tile(self.tiles[0].len() - 1, y, tile);
+            self.set_tile(self.width() - 1, y, tile);
         }
     }
 

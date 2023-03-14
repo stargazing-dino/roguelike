@@ -3,7 +3,7 @@ use bevy_ecs_tilemap::tiles::{TilePos, TileStorage};
 
 use crate::{
     components::{obstacle::Obstacle, viewshed::Viewshed},
-    line_of_sight::Visibility,
+    line_of_sight::LineOfSight,
     Map,
 };
 
