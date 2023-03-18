@@ -9,7 +9,7 @@ use num_integer::Roots;
 use crate::{
     components::{last_moved_time::LastMovedTime, path::Path, player::Player},
     constants::MAP_SIZE,
-    input_managers::players::PlayerAction,
+    input::players::PlayerAction,
     Map,
 };
 

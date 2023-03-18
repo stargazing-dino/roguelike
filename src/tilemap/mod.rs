@@ -8,10 +8,12 @@ pub mod entities_from_tilemap;
 pub mod generate_tilemap;
 pub mod urect;
 
+#[derive(Debug, Clone)]
 pub struct Tilemap {
     tiles: Vec<Vec<TileType>>,
 }
 
+#[derive(Debug, Copy, Clone)]
 pub enum LineDirection {
     Vertical,
     Horizontal,

@@ -6,7 +6,7 @@ use components::{
     player::{Player, PlayerBundle},
 };
 use constants::{TileType, MAP_SIZE, TILE_SIZE};
-use input_managers::players::PlayerAction;
+use input::players::PlayerAction;
 use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
 use systems::{
     explore_tiles::explore_tiles, move_playable::move_player,
@@ -21,7 +21,7 @@ mod actions;
 mod camera;
 mod components;
 mod constants;
-mod input_managers;
+mod input;
 mod line_of_sight;
 mod scorers;
 mod systems;

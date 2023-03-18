@@ -10,7 +10,7 @@ pub const TILE_SIZE: TilemapTileSize = TilemapTileSize { x: 16.0, y: 16.0 };
 
 // The sprite sheet is 49x18
 #[allow(dead_code)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum TileType {
     Ground = 0,
     GroundWithDirt = 1,
