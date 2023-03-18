@@ -1,6 +1,9 @@
 pub mod explored_tiles;
+pub mod health;
 pub mod interactable;
+pub mod last_moved_time;
 pub mod obstacle;
+pub mod path;
 pub mod player;
+pub mod target;
 pub mod viewshed;
-pub mod walkable;

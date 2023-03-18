@@ -1,6 +1,5 @@
 use bevy::prelude::Component;
 
-// TODO: consider if opaque is a better name
-/// This component is used to mark tiles that are walkable.
-#[derive(Component)]
+/// This component is used to mark tiles that are not walkable.
+#[derive(Component, Debug, Copy, Clone)]
 pub struct Obstacle;

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
 use crate::{
-    components::{obstacle::Obstacle, walkable::Walkable},
+    components::{obstacle::Obstacle, path::Path},
     constants::TileType,
     tilemap::Tilemap,
 };
@@ -43,7 +43,7 @@ pub fn entities_from_tilemap(
                 | TileType::GroundWithGrass
                 | TileType::GroundWithWeeds
                 | TileType::GroundWithLatticedGrass => {
-                    entity_commands.insert(Walkable);
+                    entity_commands.insert(Path);
                 }
                 TileType::Cactus => {
                     entity_commands.insert(Obstacle);

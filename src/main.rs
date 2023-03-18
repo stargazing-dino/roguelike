@@ -2,9 +2,11 @@ use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_tilemap::prelude::*;
 use components::{
     explored_tiles::ExploredTiles,
-    player::{Player, PlayerAction, PlayerBundle},
+    last_moved_time::LastMovedTime,
+    player::{Player, PlayerBundle},
 };
 use constants::{TileType, MAP_SIZE, TILE_SIZE};
+use input_managers::players::PlayerAction;
 use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
 use systems::{
     explore_tiles::explore_tiles, move_playable::move_player,
@@ -12,21 +14,23 @@ use systems::{
 };
 
 use components::viewshed::Viewshed;
+use thinkers::ThinkersPlugin;
 use tilemap::{entities_from_tilemap::entities_from_tilemap, generate_tilemap::generate_tilemap};
 
+mod actions;
 mod camera;
 mod components;
 mod constants;
+mod input_managers;
 mod line_of_sight;
+mod scorers;
 mod systems;
+mod thinkers;
 mod tilemap;
 
 // TODO: Move this to a resource or something... I think
 #[derive(Component)]
 pub struct Map {}
-
-#[derive(Component)]
-pub struct LastMovedTime(f64);
 
 fn main() {
     App::new()
@@ -34,7 +38,7 @@ fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: String::from("Update tile positions without despawning."),
+                        title: String::from("Roguelike"),
                         resolution: WindowResolution::new(460., 720.),
                         ..Default::default()
                     }),
@@ -44,6 +48,7 @@ fn main() {
         )
         .add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(TilemapPlugin)
+        .add_plugin(ThinkersPlugin)
         .add_startup_system(setup)
         .add_system(camera::movement)
         .add_system(explore_tiles)
@@ -105,7 +110,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             PlayerBundle {
                 player: Player::One,
                 input_manager: InputManagerBundle {
-                    input_map: PlayerBundle::input_map(Player::One),
+                    input_map: PlayerAction::input_map_for(Player::One),
                     ..Default::default()
                 },
             },

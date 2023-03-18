@@ -13,4 +13,5 @@ big-brain = "0.17.0"
 leafwing-input-manager = "0.9.0"
 num-integer = "0.1.45"
 rand = "0.8.5"
+bracket-pathfinding = "0.8.7"
 # bevy = { git = "https://github.com/bevyengine/bevy.git" }

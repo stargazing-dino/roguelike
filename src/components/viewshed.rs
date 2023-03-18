@@ -1,9 +1,10 @@
 use bevy::prelude::Component;
 use bevy_ecs_tilemap::tiles::TilePos;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Viewshed {
     pub range: u32,
+
     pub visible_tiles: Vec<TilePos>,
 }
 

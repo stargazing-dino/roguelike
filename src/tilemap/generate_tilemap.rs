@@ -9,7 +9,6 @@ use crate::{
 pub fn generate_tilemap(size: TilemapSize) -> (Tilemap, (usize, usize)) {
     let mut tilemap = Tilemap::new(size.x as usize, size.y as usize);
     let rng = &mut rand::thread_rng();
-
     let mut rooms: Vec<URect> = Vec::new();
 
     const MAX_ROOMS: i32 = 10;

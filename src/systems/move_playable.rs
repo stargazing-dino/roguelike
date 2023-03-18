@@ -7,12 +7,10 @@ use leafwing_input_manager::prelude::ActionState;
 use num_integer::Roots;
 
 use crate::{
-    components::{
-        player::{Player, PlayerAction},
-        walkable::Walkable,
-    },
+    components::{last_moved_time::LastMovedTime, path::Path, player::Player},
     constants::MAP_SIZE,
-    LastMovedTime, Map,
+    input_managers::players::PlayerAction,
+    Map,
 };
 
 pub trait TileDistance {
@@ -35,7 +33,7 @@ pub fn move_player(
     action_query: Query<&ActionState<PlayerAction>, With<Player>>,
     mut query: Query<(&mut TilePos, &mut LastMovedTime), With<Player>>,
     map_storage_query: Query<&TileStorage, With<Map>>,
-    walkable_query: Query<With<Walkable>>,
+    walkable_query: Query<With<Path>>,
     time: Res<Time>,
 ) {
     let action_state = action_query.single();
