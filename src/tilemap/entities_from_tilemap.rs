@@ -30,6 +30,9 @@ pub fn entities_from_tilemap(
                 ..Default::default()
             });
 
+            // Woah! Check this out :]
+            // matches!(tile, TileType::GroundPathPartial | TileType::GroundPathSmall | TileType::GroundPathLarge)
+
             // TODO: Implement groups
             match tile {
                 TileType::Ground
@@ -40,10 +43,10 @@ pub fn entities_from_tilemap(
                 | TileType::GroundWithGrass
                 | TileType::GroundWithWeeds
                 | TileType::GroundWithLatticedGrass => {
-                    entity_commands.insert(Walkable {});
+                    entity_commands.insert(Walkable);
                 }
                 TileType::Cactus => {
-                    entity_commands.insert(Obstacle {});
+                    entity_commands.insert(Obstacle);
                 }
                 _ => {}
             }
