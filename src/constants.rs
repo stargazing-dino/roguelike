@@ -108,8 +108,42 @@ pub enum TileType {
     // CarProfileSmall = 91,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum TileGroup {
+    Ground,
+    Road,
+    Wall,
+    // FIXME: Implement the rest of these.
+    Other,
+}
+
 impl TileType {
     pub fn index(&self) -> TileTextureIndex {
         TileTextureIndex(*self as u32)
+    }
+
+    pub fn group(&self) -> TileGroup {
+        match self {
+            TileType::Ground
+            | TileType::GroundWithDirt
+            | TileType::GroundPathPartial
+            | TileType::GroundPathSmall
+            | TileType::GroundPathLarge
+            | TileType::GroundWithGrass
+            | TileType::GroundWithWeeds
+            | TileType::GroundWithLatticedGrass
+            | TileType::RoadVertical
+            | TileType::RoadRightBend
+            | TileType::RoadVerticalWithRightBend
+            | TileType::Road4Way
+            | TileType::RoadEnd
+            | TileType::SideWalk => TileGroup::Ground,
+            _ => TileGroup::Other,
+        }
+    }
+
+    /// Returns true if the tile is a path and thus can be walked on.
+    pub fn is_walkable(&self) -> bool {
+        self.group() == TileGroup::Ground
     }
 }

@@ -1,3 +1,5 @@
+use bracket_pathfinding::prelude::DistanceAlg::Pythagoras;
+use bracket_pathfinding::prelude::{Algorithm2D, BaseMap, Point, SmallVec};
 use num_integer::Roots;
 
 use crate::constants::TileType;
@@ -8,9 +10,16 @@ pub mod entities_from_tilemap;
 pub mod generate_tilemap;
 pub mod urect;
 
+/// A 2D map of tiles.
 #[derive(Debug, Clone)]
 pub struct Tilemap {
-    tiles: Vec<Vec<TileType>>,
+    tiles: Vec<TileType>,
+
+    /// Width of the map in tiles.
+    pub width: usize,
+
+    /// Height of the map in tiles.
+    pub height: usize,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -22,26 +31,34 @@ pub enum LineDirection {
 
 // TODO: I think I'd like if this code used u32 instead of usize.
 impl Tilemap {
-    pub fn new(width: usize, height: usize) -> Tilemap {
-        Tilemap {
-            tiles: vec![vec![TileType::Ground; width]; height],
+    fn valid_exit(&self, location: Point, delta: Point) -> Option<usize> {
+        let dest = location + delta;
+        if self.in_bounds(dest) {
+            let index = self.point2d_to_index(dest);
+            if !self.is_opaque(index) {
+                Some(index)
+            } else {
+                None
+            }
+        } else {
+            None
         }
     }
 
-    pub fn width(&self) -> usize {
-        self.tiles[0].len()
-    }
-
-    pub fn height(&self) -> usize {
-        self.tiles.len()
+    pub fn new(width: usize, height: usize) -> Tilemap {
+        Tilemap {
+            tiles: vec![TileType::Ground; width * height],
+            width,
+            height,
+        }
     }
 
     pub fn get_tile(&self, x: usize, y: usize) -> &TileType {
-        &self.tiles[y][x]
+        &self.tiles[y * self.width + x]
     }
 
     pub fn set_tile(&mut self, x: usize, y: usize, tile: TileType) {
-        self.tiles[y][x] = tile;
+        self.tiles[y * self.width + x] = tile;
     }
 
     pub fn apply_rect_to_map(&mut self, rect: &URect, tile: TileType) {
@@ -66,8 +83,8 @@ impl Tilemap {
 
     // TODO: This is filled. We need an outline version.
     pub fn apply_circle_to_map(&mut self, center: &(usize, usize), radius: usize, tile: TileType) {
-        for x in 0..self.width() {
-            for y in 0..self.height() {
+        for x in 0..self.width {
+            for y in 0..self.height {
                 let distance = ((x as i32 - center.0 as i32).pow(2)
                     + (y as i32 - center.1 as i32).pow(2))
                 .sqrt() as usize;
@@ -80,14 +97,14 @@ impl Tilemap {
     }
 
     pub fn apply_border_to_map(&mut self, tile: TileType) {
-        for x in 0..self.width() {
+        for x in 0..self.width {
             self.set_tile(x, 0, tile);
-            self.set_tile(x, self.height() - 1, tile);
+            self.set_tile(x, self.height - 1, tile);
         }
 
-        for y in 0..self.height() {
+        for y in 0..self.height {
             self.set_tile(0, y, tile);
-            self.set_tile(self.width() - 1, y, tile);
+            self.set_tile(self.width - 1, y, tile);
         }
     }
 
@@ -179,5 +196,58 @@ impl Tilemap {
             }
             _ => todo!(),
         }
+    }
+}
+
+impl Algorithm2D for Tilemap {
+    fn dimensions(&self) -> Point {
+        Point::new(self.width, self.height)
+    }
+}
+
+impl BaseMap for Tilemap {
+    // Anything that is not walkable is opaque
+    fn is_opaque(&self, _idx: usize) -> bool {
+        let point = self.index_to_point2d(_idx);
+
+        !self
+            .get_tile(point.x as usize, point.y as usize)
+            .is_walkable()
+    }
+
+    fn get_available_exits(&self, _idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        let mut exits = SmallVec::new();
+        let location = self.index_to_point2d(_idx);
+
+        if let Some(idx) = self.valid_exit(location, Point::new(-1, 0)) {
+            exits.push((idx, 1.0))
+        }
+        if let Some(idx) = self.valid_exit(location, Point::new(1, 0)) {
+            exits.push((idx, 1.0))
+        }
+        if let Some(idx) = self.valid_exit(location, Point::new(0, -1)) {
+            exits.push((idx, 1.0))
+        }
+        if let Some(idx) = self.valid_exit(location, Point::new(0, 1)) {
+            exits.push((idx, 1.0))
+        }
+        if let Some(idx) = self.valid_exit(location, Point::new(-1, -1)) {
+            exits.push((idx, 1.4))
+        }
+        if let Some(idx) = self.valid_exit(location, Point::new(-1, 1)) {
+            exits.push((idx, 1.4))
+        }
+        if let Some(idx) = self.valid_exit(location, Point::new(1, -1)) {
+            exits.push((idx, 1.4))
+        }
+        if let Some(idx) = self.valid_exit(location, Point::new(1, 1)) {
+            exits.push((idx, 1.4))
+        }
+
+        exits
+    }
+
+    fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
+        Pythagoras.distance2d(self.index_to_point2d(idx1), self.index_to_point2d(idx2))
     }
 }

@@ -6,7 +6,7 @@ use crate::{
     tilemap::{urect::URect, LineDirection, Tilemap},
 };
 
-pub fn generate_tilemap(size: TilemapSize) -> (Tilemap, (usize, usize)) {
+pub fn generate_tilemap(size: TilemapSize) -> Tilemap {
     let mut tilemap = Tilemap::new(size.x as usize, size.y as usize);
     let rng = &mut rand::thread_rng();
     let mut rooms: Vec<URect> = Vec::new();
@@ -51,6 +51,5 @@ pub fn generate_tilemap(size: TilemapSize) -> (Tilemap, (usize, usize)) {
 
     tilemap.apply_border_to_map(TileType::GroundPathLarge);
 
-    // (tilemap, rooms[0].center())
-    (tilemap, (10, 10))
+    tilemap
 }

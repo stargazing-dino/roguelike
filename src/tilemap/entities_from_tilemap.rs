@@ -3,7 +3,7 @@ use bevy_ecs_tilemap::prelude::*;
 
 use crate::{
     components::{obstacle::Obstacle, path::Path},
-    constants::TileType,
+    constants::TileGroup,
     tilemap::Tilemap,
 };
 
@@ -14,8 +14,8 @@ pub fn entities_from_tilemap(
     commands: &mut Commands,
     tile_storage: &mut TileStorage,
 ) {
-    for x in 0..tilemap.width() {
-        for y in 0..tilemap.height() {
+    for x in 0..tilemap.width {
+        for y in 0..tilemap.height {
             let tile = tilemap.get_tile(x, y);
             let tile_texture_index = tile.index();
             let tile_pos = TilePos {
@@ -30,22 +30,11 @@ pub fn entities_from_tilemap(
                 ..Default::default()
             });
 
-            // Woah! Check this out :]
-            // matches!(tile, TileType::GroundPathPartial | TileType::GroundPathSmall | TileType::GroundPathLarge)
-
-            // TODO: Implement groups
-            match tile {
-                TileType::Ground
-                | TileType::GroundWithDirt
-                | TileType::GroundPathPartial
-                | TileType::GroundPathSmall
-                | TileType::GroundPathLarge
-                | TileType::GroundWithGrass
-                | TileType::GroundWithWeeds
-                | TileType::GroundWithLatticedGrass => {
+            match tile.group() {
+                TileGroup::Ground => {
                     entity_commands.insert(Path);
                 }
-                TileType::Cactus => {
+                TileGroup::Other => {
                     entity_commands.insert(Obstacle);
                 }
                 _ => {}

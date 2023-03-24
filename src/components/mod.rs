@@ -1,5 +1,5 @@
+pub mod attributes;
 pub mod explored_tiles;
-pub mod health;
 pub mod interactable;
 pub mod last_moved_time;
 pub mod obstacle;

@@ -3,7 +3,7 @@ use big_brain::{prelude::ActionState, thinker::Actor};
 
 use crate::{
     actions::attack::AttackAction,
-    components::{health::Health, target::Target},
+    components::{attributes::health::Health, target::Target},
 };
 
 pub fn attack_action(

@@ -68,7 +68,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Background layer
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
     let tilemap_entity = commands.spawn_empty().id();
-    let (tilemap, starting_position) = generate_tilemap(MAP_SIZE);
+    // TODO: Just return a tilemap and then have an impl that gives you a spot to place
+    // the player.
+    let tilemap = generate_tilemap(MAP_SIZE);
 
     entities_from_tilemap(
         tilemap,
@@ -94,11 +96,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Foreground layer
     let tilemap_entity = commands.spawn_empty().id();
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
+
+    // let starting_positition = tilemap.
+    let starting_position = (2, 2);
+
     let player_pos = TilePos {
         x: starting_position.0 as u32,
         y: starting_position.1 as u32,
     };
-
     let player_entity = commands
         .spawn((
             TileBundle {
