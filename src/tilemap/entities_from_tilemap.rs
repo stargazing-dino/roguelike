@@ -9,7 +9,7 @@ use crate::{
 
 /// Adds entities to the world from a tilemap
 pub fn entities_from_tilemap(
-    tilemap: Tilemap,
+    tilemap: &Tilemap,
     tilemap_id: TilemapId,
     commands: &mut Commands,
     tile_storage: &mut TileStorage,

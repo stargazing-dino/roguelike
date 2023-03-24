@@ -13,6 +13,7 @@ pub mod urect;
 /// A 2D map of tiles.
 #[derive(Debug, Clone)]
 pub struct Tilemap {
+    /// The tiles in the map.
     tiles: Vec<TileType>,
 
     /// Width of the map in tiles.
@@ -29,22 +30,9 @@ pub enum LineDirection {
     Heuristic,
 }
 
-// TODO: I think I'd like if this code used u32 instead of usize.
+// TODO: I think I'd like if this code used u32 instead of usize. Orr maybe i32? I dunno.
+// With iRect I'd be able to go negative, which would be nice.
 impl Tilemap {
-    fn valid_exit(&self, location: Point, delta: Point) -> Option<usize> {
-        let dest = location + delta;
-        if self.in_bounds(dest) {
-            let index = self.point2d_to_index(dest);
-            if !self.is_opaque(index) {
-                Some(index)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
     pub fn new(width: usize, height: usize) -> Tilemap {
         Tilemap {
             tiles: vec![TileType::Ground; width * height],
@@ -53,14 +41,70 @@ impl Tilemap {
         }
     }
 
+    /// Returns the tile at the given coordinates.
     pub fn get_tile(&self, x: usize, y: usize) -> &TileType {
         &self.tiles[y * self.width + x]
     }
 
+    /// Returns the neighbors of the given coordinates.
+    pub fn get_neighbors(&self, x: usize, y: usize) -> SmallVec<[(usize, usize); 8]> {
+        let mut neighbors = SmallVec::new();
+
+        if x > 0 {
+            neighbors.push((x - 1, y));
+        }
+
+        if x < self.width - 1 {
+            neighbors.push((x + 1, y));
+        }
+
+        if y > 0 {
+            neighbors.push((x, y - 1));
+        }
+
+        if y < self.height - 1 {
+            neighbors.push((x, y + 1));
+        }
+
+        neighbors
+    }
+
+    /// Returns a list of tiles that would be good candidates to spawn at.
+    /// This is determined by being a ground tile whose neighbors are all ground tiles.
+    pub fn get_safe_spawn_tiles(&self) -> Vec<(usize, usize)> {
+        let mut safe_spawn_tiles = Vec::new();
+
+        for x in 0..self.width {
+            for y in 0..self.height {
+                let current_tile = self.get_tile(x, y);
+
+                if current_tile.is_walkable() {
+                    let mut is_safe = true;
+
+                    for (nx, ny) in self.get_neighbors(x, y) {
+                        let neighbor_tile = self.get_tile(nx, ny);
+
+                        if !neighbor_tile.is_walkable() {
+                            is_safe = false;
+                        }
+                    }
+
+                    if is_safe {
+                        safe_spawn_tiles.push((x, y));
+                    }
+                }
+            }
+        }
+
+        safe_spawn_tiles
+    }
+
+    /// Sets the tile at the given coordinates.
     pub fn set_tile(&mut self, x: usize, y: usize, tile: TileType) {
         self.tiles[y * self.width + x] = tile;
     }
 
+    /// Applies a rectangle of a given tile type to the map.
     pub fn apply_rect_to_map(&mut self, rect: &URect, tile: TileType) {
         for x in rect.x..rect.x + rect.width {
             for y in rect.y..rect.y + rect.height {
@@ -69,6 +113,7 @@ impl Tilemap {
         }
     }
 
+    /// Applies a rectangle border or outline of a given tile type to the map.
     pub fn apply_rect_border_to_map(&mut self, rect: &URect, tile: TileType) {
         for x in rect.x..rect.x + rect.width {
             self.set_tile(x, rect.y, tile);
@@ -96,6 +141,7 @@ impl Tilemap {
         }
     }
 
+    /// Applies a border of a given tile type to the map.
     pub fn apply_border_to_map(&mut self, tile: TileType) {
         for x in 0..self.width {
             self.set_tile(x, 0, tile);
@@ -171,10 +217,10 @@ impl Tilemap {
         }
     }
 
-    // Draws a line between the specified start and end points, using the specified
-    // tile type. The line will start at `start` and then move either vertically or
-    // horizontally until it on the same row or column as `end`. Then it will move
-    // either horizontally or vertically until it reaches `end`.
+    /// Draws a line between the start and end points, using the provided tile type.
+    /// The line will start at `start` and then move either vertically or
+    /// horizontally until it on the same row or column as `end`. Then it will move
+    /// either horizontally or vertically until it reaches `end`.
     pub fn draw_line_with_bend(
         &mut self,
         start: (usize, usize),
@@ -199,6 +245,22 @@ impl Tilemap {
     }
 }
 
+impl Tilemap {
+    fn valid_exit(&self, location: Point, delta: Point) -> Option<usize> {
+        let dest = location + delta;
+        if self.in_bounds(dest) {
+            let index = self.point2d_to_index(dest);
+            if !self.is_opaque(index) {
+                Some(index)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+}
+
 impl Algorithm2D for Tilemap {
     fn dimensions(&self) -> Point {
         Point::new(self.width, self.height)
@@ -208,11 +270,7 @@ impl Algorithm2D for Tilemap {
 impl BaseMap for Tilemap {
     // Anything that is not walkable is opaque
     fn is_opaque(&self, _idx: usize) -> bool {
-        let point = self.index_to_point2d(_idx);
-
-        !self
-            .get_tile(point.x as usize, point.y as usize)
-            .is_walkable()
+        !self.tiles[_idx].is_walkable()
     }
 
     fn get_available_exits(&self, _idx: usize) -> SmallVec<[(usize, f32); 10]> {

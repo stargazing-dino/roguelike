@@ -8,6 +8,7 @@ use components::{
 use constants::{TileType, MAP_SIZE, TILE_SIZE};
 use input::players::PlayerAction;
 use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
+use rand::seq::SliceRandom;
 use systems::{
     explore_tiles::explore_tiles, move_playable::move_player,
     viewable_tiles_for_player::viewable_tiles_for_player, viewshed::update_viewshed,
@@ -73,7 +74,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let tilemap = generate_tilemap(MAP_SIZE);
 
     entities_from_tilemap(
-        tilemap,
+        &tilemap,
         TilemapId(tilemap_entity),
         &mut commands,
         &mut tile_storage,
@@ -96,18 +97,17 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Foreground layer
     let tilemap_entity = commands.spawn_empty().id();
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
-
-    // let starting_positition = tilemap.
-    let starting_position = (2, 2);
-
-    let player_pos = TilePos {
+    let mut rng = rand::thread_rng();
+    let safe_spawn_tiles = tilemap.get_safe_spawn_tiles();
+    let starting_position = safe_spawn_tiles.choose(&mut rng).unwrap();
+    let player_position = TilePos {
         x: starting_position.0 as u32,
         y: starting_position.1 as u32,
     };
     let player_entity = commands
         .spawn((
             TileBundle {
-                position: player_pos,
+                position: player_position,
                 tilemap_id: TilemapId(tilemap_entity),
                 texture_index: TileType::Human.index(),
                 ..Default::default()
@@ -128,7 +128,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .id();
 
-    tile_storage.set(&player_pos, player_entity);
+    tile_storage.set(&player_position, player_entity);
 
     commands.entity(tilemap_entity).insert(TilemapBundle {
         grid_size,
