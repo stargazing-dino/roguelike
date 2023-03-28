@@ -106,6 +106,12 @@ pub enum TileType {
     // CarProfileSmall = 91,
 }
 
+impl Default for TileType {
+    fn default() -> Self {
+        TileType::Ground
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum TileGroup {
     Ground,
