@@ -2,12 +2,12 @@ use bracket_pathfinding::prelude::DistanceAlg::Pythagoras;
 use bracket_pathfinding::prelude::{Algorithm2D, BaseMap, Point, SmallVec};
 use num_integer::Roots;
 
-use crate::constants::TileType;
-
+use self::tile_type::TileType;
 use self::urect::URect;
 
 pub mod entities_from_tilemap;
 pub mod generate_tilemap;
+pub mod tile_type;
 pub mod urect;
 
 /// A 2D map of tiles.

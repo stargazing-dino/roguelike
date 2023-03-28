@@ -3,9 +3,10 @@ use bevy_ecs_tilemap::prelude::*;
 
 use crate::{
     components::{obstacle::Obstacle, path::Path},
-    constants::TileGroup,
     tilemap::Tilemap,
 };
+
+use super::tile_type::TileGroup;
 
 /// Adds entities to the world from a tilemap
 pub fn entities_from_tilemap(

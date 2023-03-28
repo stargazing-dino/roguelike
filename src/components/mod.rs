@@ -1,7 +1,6 @@
 pub mod attributes;
 pub mod explored_tiles;
 pub mod interactable;
-pub mod last_moved_time;
 pub mod obstacle;
 pub mod path;
 pub mod player;

@@ -1,10 +1,7 @@
 use bevy_ecs_tilemap::prelude::*;
 use rand::Rng;
 
-use crate::{
-    constants::TileType,
-    tilemap::{urect::URect, LineDirection, Tilemap},
-};
+use crate::tilemap::{tile_type::TileType, urect::URect, LineDirection, Tilemap};
 
 pub fn generate_tilemap(size: TilemapSize) -> Tilemap {
     let mut tilemap = Tilemap::new(size.x as usize, size.y as usize);

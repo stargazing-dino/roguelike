@@ -1,11 +1,12 @@
+use actions::wander::WanderAction;
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_ecs_tilemap::prelude::*;
 use components::{
+    attributes::move_ability::MoveAbility,
     explored_tiles::ExploredTiles,
-    last_moved_time::LastMovedTime,
     player::{Player, PlayerBundle},
 };
-use constants::{TileType, MAP_SIZE, TILE_SIZE};
+use constants::{MAP_SIZE, TILE_SIZE};
 use input::players::PlayerAction;
 use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
 use rand::seq::SliceRandom;
@@ -16,7 +17,10 @@ use systems::{
 
 use components::viewshed::Viewshed;
 use thinkers::ThinkersPlugin;
-use tilemap::{entities_from_tilemap::entities_from_tilemap, generate_tilemap::generate_tilemap};
+use tilemap::{
+    entities_from_tilemap::entities_from_tilemap, generate_tilemap::generate_tilemap,
+    tile_type::TileType,
+};
 
 mod actions;
 mod camera;
@@ -47,6 +51,7 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
+        .insert_resource(Msaa::Off)
         .add_plugin(InputManagerPlugin::<PlayerAction>::default())
         .add_plugin(TilemapPlugin)
         .add_plugin(ThinkersPlugin)
@@ -69,8 +74,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Background layer
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
     let tilemap_entity = commands.spawn_empty().id();
-    // TODO: Just return a tilemap and then have an impl that gives you a spot to place
-    // the player.
     let tilemap = generate_tilemap(MAP_SIZE);
 
     entities_from_tilemap(
@@ -99,6 +102,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut tile_storage = TileStorage::empty(MAP_SIZE);
     let mut rng = rand::thread_rng();
     let safe_spawn_tiles = tilemap.get_safe_spawn_tiles();
+
     let starting_position = safe_spawn_tiles.choose(&mut rng).unwrap();
     let player_position = TilePos {
         x: starting_position.0 as u32,
@@ -119,7 +123,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..Default::default()
                 },
             },
-            LastMovedTime(0.0),
+            MoveAbility {
+                last_moved: 0.0,
+                speed: 0.5,
+            },
             Viewshed {
                 visible_tiles: Vec::new(),
                 range: 8,
@@ -129,6 +136,36 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .id();
 
     tile_storage.set(&player_position, player_entity);
+
+    for _ in 0..3 {
+        let starting_monster_position = safe_spawn_tiles.choose(&mut rng).unwrap();
+        let monster_position = TilePos {
+            x: starting_monster_position.0 as u32,
+            y: starting_monster_position.1 as u32,
+        };
+
+        let monster_entity = commands
+            .spawn((
+                TileBundle {
+                    position: monster_position,
+                    tilemap_id: TilemapId(tilemap_entity),
+                    texture_index: TileType::HumanWithHoodedCowl.index(),
+                    ..Default::default()
+                },
+                WanderAction,
+                MoveAbility {
+                    last_moved: 0.0,
+                    speed: 0.5,
+                },
+                Viewshed {
+                    visible_tiles: Vec::new(),
+                    range: 8,
+                },
+            ))
+            .id();
+
+        tile_storage.set(&monster_position, monster_entity);
+    }
 
     commands.entity(tilemap_entity).insert(TilemapBundle {
         grid_size,
