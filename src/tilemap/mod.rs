@@ -1,18 +1,21 @@
 use bracket_pathfinding::prelude::DistanceAlg::Pythagoras;
 use bracket_pathfinding::prelude::{Algorithm2D, BaseMap, Point, SmallVec};
 
+use self::canvas::Canvas;
 use self::grid::Grid;
 use self::tile_type::TileType;
 
+pub mod canvas;
 pub mod entities_from_tilemap;
 pub mod generate_tilemap;
 pub mod grid;
 pub mod tile_type;
 pub mod urect;
 
+/// A 2D map of tiles.
 type Tilemap = Grid<TileType>;
 
-impl Grid<TileType> {
+impl Tilemap {
     fn valid_exit(&self, location: Point, delta: Point) -> Option<usize> {
         let dest = location + delta;
         if self.in_bounds(dest) {
@@ -34,13 +37,13 @@ impl Grid<TileType> {
 
         for x in 0..self.width {
             for y in 0..self.height {
-                let current_tile = self.get_tile(x, y);
+                let current_tile = self.get(x, y);
 
                 if current_tile.is_walkable() {
                     let mut is_safe = true;
 
                     for (nx, ny) in self.get_neighbors(x, y) {
-                        let neighbor_tile = self.get_tile(nx, ny);
+                        let neighbor_tile = self.get(nx, ny);
 
                         if !neighbor_tile.is_walkable() {
                             is_safe = false;
@@ -58,16 +61,34 @@ impl Grid<TileType> {
     }
 }
 
-impl Algorithm2D for Grid<TileType> {
+impl Canvas<TileType> for Tilemap {
+    fn set(&mut self, x: usize, y: usize, item: &TileType) {
+        self.set(x, y, item);
+    }
+
+    fn get(&self, x: usize, y: usize) -> &TileType {
+        self.get(x, y)
+    }
+
+    fn width(&self) -> usize {
+        self.width
+    }
+
+    fn height(&self) -> usize {
+        self.height
+    }
+}
+
+impl Algorithm2D for Tilemap {
     fn dimensions(&self) -> Point {
         Point::new(self.width, self.height)
     }
 }
 
-impl BaseMap for Grid<TileType> {
+impl BaseMap for Tilemap {
     // Anything that is not walkable is opaque
     fn is_opaque(&self, _idx: usize) -> bool {
-        !self.tiles[_idx].is_walkable()
+        !self.items[_idx].is_walkable()
     }
 
     fn get_available_exits(&self, _idx: usize) -> SmallVec<[(usize, f32); 10]> {

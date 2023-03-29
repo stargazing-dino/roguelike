@@ -17,7 +17,7 @@ pub fn entities_from_tilemap(
 ) {
     for x in 0..tilemap.width {
         for y in 0..tilemap.height {
-            let tile = tilemap.get_tile(x, y);
+            let tile = tilemap.get(x, y);
             let tile_texture_index = tile.index();
             let tile_pos = TilePos {
                 x: x as u32,

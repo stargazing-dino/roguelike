@@ -1,10 +1,4 @@
-use bevy::{
-    ecs::component::TableStorage,
-    prelude::{Bundle, Component},
-};
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
-
-use crate::components::{obstacle::Obstacle, path::Path};
 
 // The sprite sheet is 49x18
 #[allow(dead_code)]

@@ -1,7 +1,11 @@
 use bevy_ecs_tilemap::prelude::*;
 use rand::Rng;
 
-use crate::tilemap::{grid::LineDirection, tile_type::TileType, urect::URect};
+use crate::tilemap::{
+    canvas::{Canvas, LineDirection},
+    tile_type::TileType,
+    urect::URect,
+};
 
 use super::Tilemap;
 
@@ -29,14 +33,14 @@ pub fn generate_tilemap(size: TilemapSize) -> Tilemap {
         }
 
         if ok {
-            tilemap.apply_circle_to_map(&new_room.center(), 3, &TileType::Cactus);
+            tilemap.apply_circle(&new_room.center(), 3, &TileType::Cactus);
             // tilemap.apply_rect_border_to_map(&new_room, TileType::Cactus);
 
             if !rooms.is_empty() {
                 let (new_x, new_y) = new_room.center();
                 let (prev_x, prev_y) = rooms[rooms.len() - 1].center();
 
-                tilemap.draw_line_with_bend(
+                tilemap.apply_line_with_bend(
                     (new_x, new_y),
                     (prev_x, prev_y),
                     &TileType::GroundPathLarge,
@@ -48,7 +52,7 @@ pub fn generate_tilemap(size: TilemapSize) -> Tilemap {
         }
     }
 
-    tilemap.apply_border_to_map(&TileType::GroundPathLarge);
+    tilemap.apply_border(&TileType::GroundPathLarge);
 
     tilemap
 }
