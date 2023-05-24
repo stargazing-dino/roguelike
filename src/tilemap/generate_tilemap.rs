@@ -1,7 +1,7 @@
 use bevy_ecs_tilemap::prelude::*;
 use rand::Rng;
 
-use crate::map::{
+use crate::tilemap::{
     grid_2d::{Grid2D, LineDirection},
     tile_type::TileType,
     urect::URect,

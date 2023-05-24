@@ -1,33 +1,32 @@
-use ai::wander_action::WanderAction;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 use constants::{MAP_SIZE, TILE_SIZE};
 use input::player_action::PlayerAction;
 use leafwing_input_manager::InputManagerBundle;
-use map::{
-    entities_from_tilemap::entities_from_tilemap, generate_tilemap::generate_tilemap,
-    tile_type::TileType,
-};
-use movement::move_ability::MoveAbility;
+use movement::{move_ability::MoveAbility, wander_action::WanderAction};
 use plugins::{
     enemies::UnitsPlugin,
     graphics::GraphicsPlugin,
     player::{Player, PlayerBundle, PlayerPlugin},
 };
 use rand::seq::SliceRandom;
+use tilemap::{
+    entities_from_tilemap::entities_from_tilemap, generate_tilemap::generate_tilemap,
+    tile_type::TileType,
+};
 
 use vision::{explored_tiles::ExploredTiles, viewshed::Viewshed};
 
-mod ai;
 mod basic_needs;
+mod behavior;
 mod combat;
 mod constants;
 mod graphics;
 mod input;
 mod interaction;
-mod map;
 mod movement;
 mod plugins;
+mod tilemap;
 mod vision;
 
 #[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash)]

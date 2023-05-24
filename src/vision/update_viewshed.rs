@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::{TilePos, TileStorage};
 
 use crate::{
-    map::{obstacle::Obstacle, tile_distance::TileDistance},
+    tilemap::{obstacle::Obstacle, tile_distance::TileDistance},
     Map,
 };
 
