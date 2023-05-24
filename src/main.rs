@@ -1,37 +1,45 @@
-use actions::wander::WanderAction;
-use bevy::{prelude::*, window::WindowResolution};
+use ai::wander_action::WanderAction;
+use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
-use components::{
-    attributes::move_ability::MoveAbility,
-    explored_tiles::ExploredTiles,
-    player::{Player, PlayerBundle},
-};
 use constants::{MAP_SIZE, TILE_SIZE};
-use input::players::PlayerAction;
-use leafwing_input_manager::{prelude::InputManagerPlugin, InputManagerBundle};
-use rand::seq::SliceRandom;
-use systems::{
-    explore_tiles::explore_tiles, move_playable::move_player,
-    viewable_tiles_for_player::viewable_tiles_for_player, viewshed::update_viewshed,
-};
-
-use components::viewshed::Viewshed;
-use thinkers::ThinkersPlugin;
-use tilemap::{
+use input::player_action::PlayerAction;
+use leafwing_input_manager::InputManagerBundle;
+use map::{
     entities_from_tilemap::entities_from_tilemap, generate_tilemap::generate_tilemap,
     tile_type::TileType,
 };
+use movement::move_ability::MoveAbility;
+use plugins::{
+    enemies::UnitsPlugin,
+    graphics::GraphicsPlugin,
+    player::{Player, PlayerBundle, PlayerPlugin},
+};
+use rand::seq::SliceRandom;
 
-mod actions;
-mod camera;
-mod components;
+use vision::{explored_tiles::ExploredTiles, viewshed::Viewshed};
+
+mod ai;
+mod basic_needs;
+mod combat;
 mod constants;
+mod graphics;
 mod input;
-mod line_of_sight;
-mod scorers;
-mod systems;
-mod thinkers;
-mod tilemap;
+mod interaction;
+mod map;
+mod movement;
+mod plugins;
+mod vision;
+
+#[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash)]
+enum GameState {
+    // During the loading State the LoadingPlugin will load our assets
+    #[default]
+    Loading,
+    // During this State the actual game logic is executed
+    Playing,
+    // Here the menu is drawn and waiting for player interaction
+    Menu,
+}
 
 // TODO: Move this to a resource or something... I think
 #[derive(Component)]
@@ -39,34 +47,17 @@ pub struct Map {}
 
 fn main() {
     App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: String::from("Roguelike"),
-                        resolution: WindowResolution::new(460., 720.),
-                        ..Default::default()
-                    }),
-                    ..default()
-                })
-                .set(ImagePlugin::default_nearest()),
-        )
-        .insert_resource(Msaa::Off)
-        .add_plugin(InputManagerPlugin::<PlayerAction>::default())
+        .add_plugin(GraphicsPlugin)
         .add_plugin(TilemapPlugin)
-        .add_plugin(ThinkersPlugin)
+        .add_plugin(UnitsPlugin)
+        .add_plugin(PlayerPlugin)
         .add_startup_system(setup)
-        .add_system(camera::movement)
-        .add_system(explore_tiles)
-        .add_system(move_player)
-        .add_system(update_viewshed.after(move_player))
-        .add_system(viewable_tiles_for_player.after(update_viewshed))
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+// TODO: Move this code into plugins.
 
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let texture_handle: Handle<Image> = asset_server.load("colored_packed.png");
     let grid_size = TILE_SIZE.into();
     let map_type = TilemapType::default();
